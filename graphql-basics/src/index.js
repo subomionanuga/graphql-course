@@ -21,6 +21,7 @@ const posts = [
     body: "bladidblablabla",
     published: true,
     author: "1"
+    // comment: ["101"]
   },
   {
     id: "2",
@@ -28,6 +29,7 @@ const posts = [
     body: "bladidblablabla even more than the first post",
     published: true,
     author: "2"
+    // comment: ["103", "104"]
   },
   {
     id: "3",
@@ -35,14 +37,15 @@ const posts = [
     body: "Going to delete anyway",
     published: true,
     author: "1"
+    // comment: ["102"]
   }
 ];
 
 const comments = [
-  { id: "101", text: "This is the first comment", author: "1" },
-  { id: "102", text: "This is the second comment", author: "1" },
-  { id: "103", text: "This is the third comment", author: "2" },
-  { id: "104", text: "This is the fourth comment", author: "2" }
+  { id: "101", text: "This is the first comment", author: "1", post: "1" },
+  { id: "102", text: "This is the second comment", author: "1", post: "3" },
+  { id: "103", text: "This is the third comment", author: "2", post: "2" },
+  { id: "104", text: "This is the fourth comment", author: "2", post: "2" }
 ];
 
 //Type definitions (schema)
@@ -70,12 +73,14 @@ const typeDefs = `
     body: String!
     published: Boolean!
     author: User!
+    comments: [Comment!]!
   }
 
   type Comment {
     id: ID!
     text: String!
     author: User!
+    post: Post!
   }
 
 `;
@@ -123,6 +128,11 @@ const resolvers = {
       return users.find(user => {
         return user.id === parent.author;
       });
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter(comment => {
+        return comment.post === parent.id;
+      });
     }
   },
   User: {
@@ -141,6 +151,11 @@ const resolvers = {
     author(parent, args, ctx, info) {
       return users.find(user => {
         return user.id === parent.author;
+      });
+    },
+    post(parent, args, ctx, info) {
+      return posts.find(post => {
+        return post.id === parent.post;
       });
     }
   }
