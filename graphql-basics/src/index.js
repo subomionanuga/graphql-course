@@ -1,4 +1,5 @@
 import { GraphQLServer } from "graphql-yoga";
+import uuidv4 from "uuid/v4";
 
 // demo data
 const users = [
@@ -56,6 +57,10 @@ const typeDefs = `
     comments: [Comment!]!
     me: User!
     post: Post!
+  }
+
+  type Mutation {
+    createUser(name: String!, email: String!, age: Int): User!
   }
 
   type User {
@@ -123,6 +128,27 @@ const resolvers = {
       };
     }
   },
+  Mutation: {
+    createUser(parent, args, ctx, info) {
+      const emailTaken = users.some(user => {
+        user.email === args.email;
+      });
+
+      if (emailTaken) {
+        throw new Error("Email Taken");
+      }
+
+      const user = {
+        id: uuidv4(),
+        name: args.name,
+        email: args.email,
+        age: args.age
+      };
+      users.push(user);
+
+      return user;
+    }
+  },
   Post: {
     author(parent, args, ctx, info) {
       return users.find(user => {
@@ -164,6 +190,10 @@ const resolvers = {
 const server = new GraphQLServer({
   typeDefs,
   resolvers
+});
+
+process.on("SIGUSR2", () => {
+  process.exit(0);
 });
 
 server.start(() => {
